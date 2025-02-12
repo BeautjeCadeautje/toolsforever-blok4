@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -13,21 +12,30 @@ if ($_SESSION['role'] != 'administrator') {
     exit;
 }
 
-//check method
+// Check if request is POST
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     echo "You are not allowed to view this page";
     exit;
 }
+
 require 'database.php';
 
-$name = $_POST['name'];
-$category = $_POST['category'];
-$price = $_POST['price'];
-$brand = $_POST['brand'];
-$image = $_POST['image'];
+$tool_id = $_POST['tool_id'];
+$name = $_POST['tool_name'];
+$category = $_POST['tool_category'];
+$price = $_POST['tool_price'];
+$brand = $_POST['tool_brand'];
+$image = $_POST['tool_image'];
 
+// Update the tool
+$sql = "UPDATE tools 
+        SET tool_name = '$name', 
+            tool_category = '$category', 
+            tool_price = '$price', 
+            tool_brand = '$brand', 
+            tool_image = '$image' 
+        WHERE tool_id = $tool_id";
 
-$sql = "INSERT INTO tools (tool_name, tool_category, tool_price, tool_brand, tool_image) VALUES ('$name', '$category', '$price', '$brand', '$image')";
 $result = mysqli_query($conn, $sql);
 
 if ($result) {
