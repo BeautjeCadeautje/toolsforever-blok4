@@ -14,12 +14,15 @@ if ($_SESSION['role'] != 'administrator') {
 
 require 'database.php';
 require 'header.php';
+
+$sql = "SELECT brand_id, brand_name FROM brands";
+$result = mysqli_query($conn, $sql);
 ?>
 
 <main>
     <h1>Nieuw Gereedschap</h1>
     <div class="container">
-        <form action="tool_create_process.php" method="post">
+        <form action="tools_create_process.php" method="post">
             <div>
                 <label for="name">Naam:</label>
                 <input type="text" id="name" name="name">
@@ -34,7 +37,12 @@ require 'header.php';
             </div>
             <div>
                 <label for="brand">Merk:</label>
-                <input type="brand" id="brand" name="brand">
+                <select id="brand" name="brand" required>
+                    <option value="">Selecteer een merk</option>
+                    <?php while ($row = mysqli_fetch_assoc($result)) : ?>
+                        <option value="<?= $row['brand_id']; ?>"><?= htmlspecialchars($row['brand_name']); ?></option>
+                    <?php endwhile; ?>
+                </select>
             </div>
             <div>
                 <label for="image">Afbeelding:</label>

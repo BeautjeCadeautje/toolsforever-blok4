@@ -31,7 +31,7 @@ $sql = "INSERT INTO tools (tool_name, tool_category, tool_price, tool_brand, too
 $result = mysqli_query($conn, $sql);
 
 if ($result) {
-    header("Location: tool_index.php");
+    header("Location: tools_index.php");
     exit;
 }
 

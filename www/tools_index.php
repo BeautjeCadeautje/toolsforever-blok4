@@ -15,7 +15,10 @@ if ($_SESSION['role'] != 'administrator') {
 
 require 'database.php';
 
-$sql = "SELECT * FROM tools";
+$sql = "SELECT tools.tool_id, tools.tool_name, tools.tool_category, tools.tool_price, 
+               COALESCE(brands.brand_name, 'Onbekend') AS brand_name 
+        FROM tools 
+        LEFT JOIN brands ON tools.tool_brand = brands.brand_id";
 $result = mysqli_query($conn, $sql);
 $tools = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
@@ -38,7 +41,7 @@ require 'header.php';
                     <td><?php echo $tool['tool_name'] ?></td>
                     <td><?php echo $tool['tool_category'] ?></td>
                     <td><?php echo $tool['tool_price'] ?></td>
-                    <td><?php echo $tool['tool_brand'] ?></td>
+                    <td><?php echo $tool['brand_name'] ?></td>
                     <td>
 
                         <a href="tools_detail.php?id=<?php echo $tool['tool_id'] ?>">Bekijk</a>
