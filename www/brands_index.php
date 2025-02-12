@@ -20,7 +20,7 @@ require 'header.php';
                 <img src="<?php echo isset($brand['brand_image']) ? 'images/' . $brand['brand_image'] : 'https://placehold.co/200' ?>" alt="<?php echo $brand['brand_name'] ?>">
                 <h3><?php echo $brand['brand_name'] ?></h3>
 
-
+                <a href="brands_edit.php?id=<?php echo $brand['brand_id'] ?>">Wijzig</a>
                 <a href="brands_delete.php?id=<?php echo $brand['brand_id'] ?>"
                     onclick="return confirm('you sure bitch?')">Verwijder</a>
             </div>
