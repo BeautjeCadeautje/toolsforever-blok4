@@ -18,7 +18,14 @@
         <nav>
             <ul>
                 <li><a href="index.php">Home</a></li>
-                <li><a href="brands_index.php">Merken</a></li>
+
+                <li class="dropdown">
+                    <a href="">Merken</a>
+                    <div class="dropdown-content">
+                        <a href="brands_index.php">Bekijken</a>
+                        <a href="brands_create.php">Toevoegen</a>
+                    </div>
+                </li>
                 <li><a href="">Winkelmand</a></li>
                 <?php if (isset($_SESSION['user_id'])) : ?>
                     <li><a href="dashboard.php">Dashboard</a></li>
