@@ -12,18 +12,20 @@ if ($_SESSION['role'] != 'administrator') {
     exit;
 }
 
+require 'database.php'; // This now contains the PDO connection `$conn`
 
-require 'database.php';
-
+// Prepare and execute the SQL query using PDO
 $sql = "SELECT tools.tool_id, tools.tool_name, tools.tool_category, tools.tool_price, 
                COALESCE(brands.brand_name, 'Onbekend') AS brand_name 
         FROM tools 
         LEFT JOIN brands ON tools.tool_brand = brands.brand_id";
-$result = mysqli_query($conn, $sql);
-$tools = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+$stmt = $conn->query($sql); // PDO query execution
+$tools = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch data as an associative array
 
 require 'header.php';
 ?>
+
 <main>
     <table>
         <thead>
@@ -38,22 +40,20 @@ require 'header.php';
         <tbody>
             <?php foreach ($tools as $tool) : ?>
                 <tr>
-                    <td><?php echo $tool['tool_name'] ?></td>
-                    <td><?php echo $tool['tool_category'] ?></td>
-                    <td><?php echo $tool['tool_price'] ?></td>
-                    <td><?php echo $tool['brand_name'] ?></td>
+                    <td><?php echo htmlspecialchars($tool['tool_name']); ?></td>
+                    <td><?php echo htmlspecialchars($tool['tool_category']); ?></td>
+                    <td><?php echo htmlspecialchars($tool['tool_price']); ?></td>
+                    <td><?php echo htmlspecialchars($tool['brand_name']); ?></td>
                     <td>
-
-                        <a href="tools_detail.php?id=<?php echo $tool['tool_id'] ?>">Bekijk</a>
-
-
-                        <a href="tools_edit.php?id=<?php echo $tool['tool_id'] ?>">Wijzig</a>
-                        <a href="tools_delete.php?id=<?php echo $tool['tool_id'] ?>"
-                            onclick="return confirm('you sure bitch?')">Verwijder</a>
+                        <a href="tools_detail.php?id=<?php echo $tool['tool_id']; ?>">Bekijk</a>
+                        <a href="tools_edit.php?id=<?php echo $tool['tool_id']; ?>">Wijzig</a>
+                        <a href="tools_delete.php?id=<?php echo $tool['tool_id']; ?>"
+                            onclick="return confirm('Are you sure?')">Verwijder</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 </main>
-<?php require 'footer.php' ?>
+
+<?php require 'footer.php'; ?>

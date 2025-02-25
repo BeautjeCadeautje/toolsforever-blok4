@@ -7,22 +7,28 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-if ($_SESSION['role'] != 'administrator') {
+if ($_SESSION['role'] !== 'administrator') {
     echo "You are not allowed to view this page, please login as admin";
     exit;
 }
+
 require 'database.php';
 
-$sql = "SELECT * FROM users";
-$result = mysqli_query($conn, $sql);
-$users = mysqli_fetch_all($result, MYSQLI_ASSOC);
+try {
+    // Fetch all users
+    $sql = "SELECT * FROM users";
+    $stmt = $conn->query($sql);
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+    exit;
+}
 
 require 'header.php';
 ?>
+
 <main>
     <div class="container">
-
-
         <table>
             <thead>
                 <tr>
@@ -36,16 +42,14 @@ require 'header.php';
             <tbody>
                 <?php foreach ($users as $user) : ?>
                     <tr>
-                        <td><?php echo $user['firstname'] ?></td>
-                        <td><?php echo $user['lastname'] ?></td>
-                        <td><?php echo $user['email'] ?></td>
-                        <td><?php echo $user['role'] ?></td>
+                        <td><?php echo htmlspecialchars($user['firstname']); ?></td>
+                        <td><?php echo htmlspecialchars($user['lastname']); ?></td>
+                        <td><?php echo htmlspecialchars($user['email']); ?></td>
+                        <td><?php echo htmlspecialchars($user['role']); ?></td>
                         <td>
-                            <a href="users_detail.php?id=<?php echo $user['id'] ?>">Bekijk</a>
-                           
-
-                            <a href="users_edit.php?id=<?php echo $user['id'] ?>">Wijzig</a>
-                            <a href="users_delete.php?id=<?php echo $user['id'] ?>" onclick="return confirm('you sure bitch?')">Verwijder</a>
+                            <a href="users_detail.php?id=<?php echo $user['id']; ?>">Bekijk</a>
+                            <a href="users_edit.php?id=<?php echo $user['id']; ?>">Wijzig</a>
+                            <a href="users_delete.php?id=<?php echo $user['id']; ?>" onclick="return confirm('Are you sure?')">Verwijder</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -53,4 +57,5 @@ require 'header.php';
         </table>
     </div>
 </main>
-<?php require 'footer.php' ?>
+
+<?php require 'footer.php'; ?>

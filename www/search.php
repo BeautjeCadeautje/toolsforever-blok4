@@ -1,35 +1,43 @@
 <?php
 session_start();
-if(isset($_SESSION['voornaam']) && isset($_SESSION['achternaam'] )){
-    echo $_SESSION['voornaam'] . " " . $_SESSION['achternaam'];
-}
+require 'database.php';
 
+if (isset($_SESSION['voornaam']) && isset($_SESSION['achternaam'])) {
+    echo htmlspecialchars($_SESSION['voornaam'] . " " . $_SESSION['achternaam']);
+}
 
 $time = time();
 echo date('d-m-Y H:i:s', $time);
 
-if(isset($_GET['search_submit'] )){
-    if(!empty($_GET['search'])){
-        require 'database.php';
-        $zoekterm = $_GET['search'];
-        $sql = "SELECT * FROM tools WHERE name LIKE '$zoekterm'";
-        $result = mysqli_query($conn, $sql);
-        $tools = mysqli_fetch_all($result, MYSQLI_ASSOC);
+// Initialize an empty array for tools
+$tools = [];
+
+if (isset($_GET['search_submit']) && !empty($_GET['search'])) {
+    $zoekterm = "%" . $_GET['search'] . "%"; // Wildcard search
+
+    try {
+        $stmt = $conn->prepare("SELECT * FROM tools WHERE tool_name LIKE :zoekterm");
+        $stmt->bindParam(':zoekterm', $zoekterm, PDO::PARAM_STR);
+        $stmt->execute();
+        $tools = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Fout bij zoeken: " . $e->getMessage();
     }
 }
 
+// Get the total count of tools
+try {
+    $stmt = $conn->query("SELECT COUNT(*) AS aantal FROM tools");
+    $resultaat_array = $stmt->fetch(PDO::FETCH_ASSOC);
+    $aantal = $resultaat_array['aantal'];
+} catch (PDOException $e) {
+    echo "Fout bij ophalen van aantal tools: " . $e->getMessage();
+}
 
-$sql = "SELECT COUNT(*) AS aantal FROM tools";
-$result = mysqli_query($conn, $sql);
-$resultaat_array = mysqli_fetch_assoc($result);
-$aantal = $resultaat_array['aantal'];
-echo $aantal
-
-
-
+echo $aantal;
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 
 <head>
     <meta charset="UTF-8">
@@ -46,8 +54,18 @@ echo $aantal
     </div>
     <div class="container">
         <h1>Resultaten</h1>
-        <?php foreach ($tools as $tool) : ?>
-        <?php endforeach; ?>
+        <?php if (!empty($tools)) : ?>
+            <ul>
+                <?php foreach ($tools as $tool) : ?>
+                    <li>
+                        <strong><?php echo htmlspecialchars($tool['tool_name']); ?></strong> - 
+                        €<?php echo number_format($tool['tool_price'] / 100, 2, ',', ''); ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else : ?>
+            <p>Geen resultaten gevonden.</p>
+        <?php endif; ?>
     </div>
 </body>
 

@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-if ($_SESSION['role'] != 'administrator') {
+if ($_SESSION['role'] !== 'administrator') {
     echo "You are not allowed to view this page, please login as admin";
     exit;
 }
@@ -21,14 +21,27 @@ if (!isset($_GET['id'])) {
 
 $id = $_GET['id'];
 
-// Fetch tool details
-$sql = "SELECT * FROM tools WHERE tool_id = $id";
-$result = mysqli_query($conn, $sql);
-$tool = mysqli_fetch_assoc($result);
+try {
+    // Fetch tool details
+    $sql = "SELECT * FROM tools WHERE tool_id = :id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $tool = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Fetch all brands
-$sql_brands = "SELECT brand_id, brand_name FROM brands";
-$result_brands = mysqli_query($conn, $sql_brands);
+    if (!$tool) {
+        echo "Tool not found.";
+        exit;
+    }
+
+    // Fetch all brands
+    $sql_brands = "SELECT brand_id, brand_name FROM brands";
+    $stmt_brands = $conn->query($sql_brands);
+    $brands = $stmt_brands->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+    exit;
+}
 
 require 'header.php';
 ?>
@@ -37,7 +50,7 @@ require 'header.php';
     <h1>Wijzig Gereedschap</h1>
     <div class="container">
         <form action="tools_edit_process.php" method="post">
-            <input type="hidden" name="tool_id" value="<?php echo $tool['tool_id'] ?>">
+            <input type="hidden" name="tool_id" value="<?php echo htmlspecialchars($tool['tool_id']); ?>">
 
             <div>
                 <label for="name">Naam:</label>
@@ -58,12 +71,12 @@ require 'header.php';
                 <label for="brand">Merk:</label>
                 <select id="brand" name="tool_brand" required>
                     <option value="">Selecteer een merk</option>
-                    <?php while ($brand = mysqli_fetch_assoc($result_brands)) : ?>
+                    <?php foreach ($brands as $brand) : ?>
                         <option value="<?php echo $brand['brand_id']; ?>"
                             <?php echo ($tool['tool_brand'] == $brand['brand_id']) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($brand['brand_name']); ?>
                         </option>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 </select>
             </div>
 

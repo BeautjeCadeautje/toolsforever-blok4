@@ -8,34 +8,33 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-
-if ($_SESSION['role'] != 'administrator') {
-    echo "You are not allowed to view this page, please login as administrator";
+if ($_SESSION['role'] !== 'administrator') {
+    echo "You are not allowed to view this page, please login as administrator.";
     exit;
 }
 
 require 'header.php';
 require 'database.php';
 
+try {
+    // Prepare and execute queries securely
+    $queries = [
+        'total_users' => "SELECT COUNT(id) AS total FROM users",
+        'total_employees' => "SELECT COUNT(id) AS total FROM users WHERE role = 'employee'",
+        'total_tools' => "SELECT COUNT(tool_id) AS total FROM tools"
+    ];
 
-$sql = [];
-$query = "SELECT COUNT(id) AS total FROM users";
-$result = mysqli_query($conn, $query);
-$users = mysqli_fetch_assoc($result);
+    $results = [];
 
-array_push($sql, $query);
-
-$query = "SELECT COUNT(id) AS total FROM users WHERE role = 'employee'";
-$result = mysqli_query($conn, $query);
-$employees = mysqli_fetch_assoc($result);
-array_push($sql, $query);
-
-$query = "SELECT COUNT(tool_id) AS total FROM tools";
-$result = mysqli_query($conn, $query);
-$tools = mysqli_fetch_assoc($result);
-array_push($sql, $query);
-
-
+    foreach ($queries as $key => $query) {
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $results[$key] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+} catch (PDOException $e) {
+    echo "Fout bij het ophalen van gegevens: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <main class="dashboard">
@@ -43,27 +42,27 @@ array_push($sql, $query);
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <h2>Welkom <?php echo $_SESSION['firstname'] ?></h2>
-                <p>Je bent ingelogd als <?php echo $_SESSION['role'] ?></p>
+                <h2>Welkom <?php echo htmlspecialchars($_SESSION['firstname']); ?></h2>
+                <p>Je bent ingelogd als <?php echo htmlspecialchars($_SESSION['role']); ?></p>
             </div>
         </div>
     </div>
     <div class="container">
         <div class="card">
             <div class="card-group">
-                <h2 for="">Totaal aantal gebruikers</h2>
-                <p><?php echo $users['total'] ?></p>
+                <h2>Totaal aantal gebruikers</h2>
+                <p><?php echo $results['total_users']; ?></p>
             </div>
             <div class="card-group">
-                <h2 for="">Totaal aantal medewerkers</h2>
-                <p><?php echo $employees['total'] ?></p>
+                <h2>Totaal aantal medewerkers</h2>
+                <p><?php echo $results['total_employees']; ?></p>
             </div>
             <div class="card-group">
-                <h2 for="">Totaal aantal soorten gereedschap</h2>
-                <p><?php echo $tools['total'] ?></p>
+                <h2>Totaal aantal soorten gereedschap</h2>
+                <p><?php echo $results['total_tools']; ?></p>
             </div>
         </div>
     </div>
 </main>
 
-<?php require 'footer.php' ?>
+<?php require 'footer.php'; ?>

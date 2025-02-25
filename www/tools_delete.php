@@ -1,6 +1,5 @@
 <?php
 
-
 if ($_SERVER["REQUEST_METHOD"] != "GET") {
     echo "WTFFF";
     exit;
@@ -11,9 +10,18 @@ if (isset($_GET['id'])) {
     require 'database.php';
     $id = $_GET["id"];
 
-    $sql = "DELETE FROM tools WHERE tool_id = $id";
+    try {
+        // Prepare and execute the delete statement
+        $sql = "DELETE FROM tools WHERE tool_id = :id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
 
-    mysqli_query($conn, $sql);
+        $stmt->execute();
 
-    header("location: tools_index.php");
+
+        exit;
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+        exit;
+    }
 }
